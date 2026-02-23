@@ -10,7 +10,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app/ app/
 COPY src/ src/
 COPY notebook/data/ notebook/data/
-COPY artifacts/ artifacts/
 
 # Expose port
 EXPOSE 8000
