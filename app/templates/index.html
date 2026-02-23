@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+
+{% block title %}Bike Demand Prediction — Portfolio{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════
+     HERO
+════════════════════════════════════════════ -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-layout">
+            <div class="hero-main">
+                <p class="hero-eyebrow">
+                    <span class="hero-eyebrow-dot"></span>
+                    Machine Learning &middot; Regression &middot; Time-Series
+                </p>
+                <h1 class="hero-title">Bike Sharing<br>Demand Prediction</h1>
+                <p class="hero-subtitle">
+                    Predict how many bikes will be needed each hour so teams can
+                    stock stations, schedule staff, and avoid empty docks.
+                    Supports staffing, rebalancing routes, and lower rider wait times.
+                </p>
+                <div class="hero-actions">
+                    <a href="/predict" class="btn btn-primary btn-lg">Try the Predictor</a>
+                    <a href="https://github.com/gitadminken/Bike-sharing" target="_blank" rel="noopener noreferrer" class="btn btn-white btn-lg">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M12 2C6.48 2 2 6.58 2 12.26c0 4.5 2.87 8.31 6.84 9.65.5.1.68-.22.68-.48 0-.24-.01-.88-.01-1.73-2.78.63-3.37-1.37-3.37-1.37-.45-1.2-1.11-1.52-1.11-1.52-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.56 2.36 1.11 2.94.85.09-.66.35-1.11.64-1.36-2.22-.26-4.56-1.14-4.56-5.08 0-1.12.39-2.04 1.03-2.76-.1-.26-.45-1.31.1-2.74 0 0 .84-.28 2.75 1.05a9.2 9.2 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.43.2 2.48.1 2.74.64.72 1.03 1.64 1.03 2.76 0 3.95-2.35 4.81-4.58 5.06.36.32.69.95.69 1.92 0 1.39-.01 2.5-.01 2.84 0 .27.18.6.69.48A10.26 10.26 0 0 0 22 12.26C22 6.58 17.52 2 12 2z" />
+                        </svg>
+                        GitHub
+                    </a>
+                </div>
+            </div>
+
+            <aside class="hero-panel" data-animate>
+                <p class="hero-panel-kicker">Prediction Snapshot</p>
+                <div class="hero-panel-grid">
+                    <div class="hero-panel-item">
+                        <p class="hero-panel-label">Best Approach</p>
+                        <p class="hero-panel-value small">Gradient Boosting</p>
+                    </div>
+                    <div class="hero-panel-item">
+                        <p class="hero-panel-label">Demand Fit</p>
+                        <p class="hero-panel-value">{{ best_r2 }}</p>
+                    </div>
+                    <div class="hero-panel-item">
+                        <p class="hero-panel-label">Typical Miss</p>
+                        <p class="hero-panel-value">{{ best_mae }}</p>
+                    </div>
+                    <div class="hero-panel-item">
+                        <p class="hero-panel-label">Historical Hours</p>
+                        <p class="hero-panel-value">{{ "{:,}".format(total_count) }}</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     KEY METRICS BAR
+════════════════════════════════════════════ -->
+<section class="section section-metrics" id="metrics">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card" data-animate>
+                <div class="stat-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <path d="M3 9h18M9 21V9" />
+                    </svg>
+                </div>
+                <div class="stat-value" data-count="{{ total_count }}">0</div>
+                <div class="stat-label">Hourly Records</div>
+                <div class="stat-detail">Two-year demand history</div>
+            </div>
+            <div class="stat-card" data-animate>
+                <div class="stat-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                    </svg>
+                </div>
+                <div class="stat-value"><span data-count="89">0</span><span class="stat-unit">.7%</span></div>
+                <div class="stat-label">Prediction Fit</div>
+                <div class="stat-detail">Higher = closer to reality</div>
+            </div>
+            <div class="stat-card" data-animate>
+                <div class="stat-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20V10" />
+                        <path d="M18 20V4" />
+                        <path d="M6 20v-4" />
+                    </svg>
+                </div>
+                <div class="stat-value" data-count="{{ feature_count }}">0</div>
+                <div class="stat-label">Input Signals</div>
+                <div class="stat-detail">Time, weather, calendar</div>
+            </div>
+            <div class="stat-card" data-animate>
+                <div class="stat-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M9 12l2 2 4-4" />
+                    </svg>
+                </div>
+                <div class="stat-value" data-count="6">0</div>
+                <div class="stat-label">Approaches Compared</div>
+                <div class="stat-detail">Best performer selected</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     ABOUT
+════════════════════════════════════════════ -->
+<section class="section section-alt" id="about">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Background &amp; Dataset</h2>
+            <p class="section-desc">
+                Operators keep stations stocked by moving bikes; hourly forecasts guide staffing and van routes.
+                Trained on UCI Bike Sharing (Washington DC, 2011–2012) using time and weather features.
+            </p>
+        </div>
+        <div class="about-grid">
+            <!-- What is bike sharing? -->
+            <div class="about-card" data-animate>
+                <div class="about-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="6" cy="17" r="3" />
+                        <circle cx="18" cy="17" r="3" />
+                        <path d="M6 17L10 10l4 7M14 10h4M10 10H7" />
+                    </svg>
+                </div>
+                <h3>What Is Bike Sharing?</h3>
+                <p>Across a city, docking stations let people unlock a bike for a short trip and return it to another station. The same shared fleet serves many riders throughout the day — like public transit, but with bikes.</p>
+            </div>
+
+            <!-- Why predict hourly? -->
+            <div class="about-card" data-animate>
+                <div class="about-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <path d="M3 9h18M9 21V9" />
+                    </svg>
+                </div>
+                <h3>Why Predict Hourly?</h3>
+                <p>Demand spikes during commute peaks, lunch, and events. Forecasts help teams move bikes before stations run empty or overcrowded — reducing rider wait times and last‑minute truck trips.</p>
+            </div>
+
+            <!-- Business overview: how operators run the service -->
+            <div class="about-card" data-animate>
+                <div class="about-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 7h18v10H3z" />
+                        <path d="M7 7V5h10v2" />
+                        <path d="M7 12h2M11 12h2M15 12h2" />
+                    </svg>
+                </div>
+                <h3>How Operators Run The Service</h3>
+                <p>
+                    Operators provide a shared fleet across city stations and earn revenue from memberships and pay-per-ride trips (often plus sponsorships).
+                    They own and maintain the bikes and docks, run customer support, and use field crews to move bikes between busy and quiet stations so riders can always find and return a bike.
+                </p>
+            </div>
+
+            <!-- Dataset at a glance -->
+            <div class="about-card" data-animate>
+                <div class="about-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20V10M18 20V4M6 20v-4" />
+                    </svg>
+                </div>
+                <h3>Dataset At A Glance</h3>
+                <p>
+                    Source: UCI Bike Sharing (Capital Bikeshare, Washington DC).<br>
+                    Timeframe: 2011–2012, hourly (~17k rows).<br>
+                    Target: <code>cnt</code> (rentals that hour).<br>
+                    Inputs: season, month, hour, weekday/holiday/working day, weather (1–4),
+                    temperature/humidity/wind speed on a 0–1 scale.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     MODEL SECTION
+════════════════════════════════════════════ -->
+<div id="model" class="section-anchor"></div>
+<section class="section" id="results">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Prediction Quality</h2>
+            <p class="section-desc">
+                These scores summarize how close predictions are to real hourly demand.
+                Lower error is better; higher % explained means the forecast follows demand patterns more closely.
+            </p>
+        </div>
+
+        <div class="results-layout">
+            <!-- Leaderboard -->
+            <div class="leaderboard-wrapper" data-animate>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th class="th-rank">#</th>
+                            <th>Approach</th>
+                            <th class="th-metric">MAE</th>
+                            <th class="th-metric">RMSE</th>
+                            <th class="th-metric">R2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in leaderboard %}
+                        <tr class="{% if row.best %}row-best{% endif %}">
+                            <td class="td-rank">{{ loop.index }}</td>
+                            <td class="td-model">
+                                {{ row.model }}
+                                {% if row.best %}<span class="badge-best">Selected</span>{% endif %}
+                            </td>
+                            <td class="td-metric">{{ row.mae }}</td>
+                            <td class="td-metric">{{ row.rmse }}</td>
+                            <td class="td-metric td-r2">{{ row.r2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Metric pills -->
+            <div class="metrics-side">
+                <div class="metric-pill" data-animate>
+                    <span class="pill-label">Typical Miss</span>
+                    <span class="pill-value">{{ best_mae }}</span>
+                    <span class="pill-unit">rentals / hr</span>
+                </div>
+                <div class="metric-pill" data-animate>
+                    <span class="pill-label">Larger Swings</span>
+                    <span class="pill-value">{{ best_rmse }}</span>
+                    <span class="pill-unit">rentals / hr</span>
+                </div>
+                <div class="metric-pill" data-animate>
+                    <span class="pill-label">Demand Explained</span>
+                    <span class="pill-value">{{ best_r2 }}</span>
+                    <span class="pill-unit">of variation</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PIPELINE
+════════════════════════════════════════════ -->
+<section class="section section-alt" id="pipeline">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">How Predictions Are Made</h2>
+            <p class="section-desc">A straightforward flow from inputs to an hourly forecast, designed for quick planning decisions.</p>
+        </div>
+        <div class="pipeline-steps">
+            <div class="pipeline-step" data-animate>
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Gather Inputs</h4>
+                    <p>Time of day, season, and weather conditions are selected as signals. These are the factors operators already use when planning for demand shifts.</p>
+                </div>
+            </div>
+            <div class="pipeline-step" data-animate>
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Prepare Signals</h4>
+                    <p>Inputs are standardized so the prediction engine reads them consistently. This keeps the forecast steady across different days and weather ranges.</p>
+                </div>
+            </div>
+            <div class="pipeline-step" data-animate>
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Learn Patterns</h4>
+                    <p>The system compares new inputs to historical demand patterns. It learns typical rush hours, seasonal swings, and weather effects.</p>
+                </div>
+            </div>
+            <div class="pipeline-step" data-animate>
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>Deliver Forecast</h4>
+                    <p>Returns an estimated hourly bike count for planning and staffing, helping set minimum bike levels and plan rebalancing before the hour starts.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     IMPACT
+════════════════════════════════════════════ -->
+<div id="impact" class="section-anchor"></div>
+<section class="section" id="impact-kpis">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Operational Impact</h2>
+            <p class="section-desc">
+                What better hourly forecasts enable for day-to-day operations and service reliability.
+            </p>
+        </div>
+        <div class="impact-kpi-grid">
+            <div class="impact-kpi" data-animate>
+                <div class="impact-kpi-icon green">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                </div>
+                <p class="impact-kpi-value">15–25%</p>
+                <p class="impact-kpi-label">Fewer Redistribution Trips</p>
+                <p class="impact-kpi-detail">Plan rebalancing routes in advance and reduce last-minute dispatches, especially around commute peaks.</p>
+            </div>
+            <div class="impact-kpi" data-animate>
+                <div class="impact-kpi-icon blue">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 6v6l4 2" />
+                    </svg>
+                </div>
+                <p class="impact-kpi-value">89.7%</p>
+                <p class="impact-kpi-label">Demand Pattern Captured</p>
+                <p class="impact-kpi-detail">Predictions track most of the day-to-day demand swings, helping teams respond before stations run low.</p>
+            </div>
+            <div class="impact-kpi" data-animate>
+                <div class="impact-kpi-icon amber">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                    </svg>
+                </div>
+                <p class="impact-kpi-value">±46</p>
+                <p class="impact-kpi-label">Typical Miss Per Hour</p>
+                <p class="impact-kpi-detail">Accurate enough for staffing, station stocking, and shift planning with a clear buffer for expected variation.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     GUIDE
+════════════════════════════════════════════ -->
+<div id="guide" class="section-anchor"></div>
+<section class="section section-alt" id="how-to-use">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">How to Use</h2>
+            <p class="section-desc">Three steps to run a live prediction.</p>
+        </div>
+        <div class="guide-steps">
+            <div class="guide-step" data-animate>
+                <div class="guide-step-num">1</div>
+                <div class="guide-step-body">
+                    <h3>Open the Predictor</h3>
+                    <p>Click <strong>"Try the Predictor"</strong> above or select <strong>Predictions</strong> in the
+                        navigation bar.</p>
+                </div>
+            </div>
+            <div class="guide-step" data-animate>
+                <div class="guide-step-num">2</div>
+                <div class="guide-step-body">
+                    <h3>Set Input Features</h3>
+                    <p>Choose season, hour, weather, temperature, humidity, and wind speed — or click <strong>"Load Test
+                            Sample"</strong> to auto-fill from real data.</p>
+                </div>
+            </div>
+            <div class="guide-step" data-animate>
+                <div class="guide-step-num">3</div>
+                <div class="guide-step-body">
+                    <h3>Get the Prediction</h3>
+                    <p>Hit <strong>"Generate Prediction"</strong>. See the model's hourly bike count estimate and — if
+                        you used a test sample — compare it against the actual recorded value.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     CTA
+════════════════════════════════════════════ -->
+<section class="section-cta">
+    <div class="container">
+        <h2 class="cta-title">See the Model in Action</h2>
+        <p class="cta-desc">
+            Input weather and time conditions manually, or load real test samples
+            and compare predictions against recorded values.
+        </p>
+        <div class="cta-actions">
+            <a href="/predict" class="btn btn-primary btn-lg">Open Predictions</a>
+            <a href="/docs" class="btn btn-white btn-lg">API Docs</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

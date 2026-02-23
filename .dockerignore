@@ -1,0 +1,14 @@
+.venv/
+.git/
+.claude/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+notebook/*.ipynb
+notebook/artifacts/
+model/
+scripts/
+uvicorn.out
+uvicorn.pid
+*.md

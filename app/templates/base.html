@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description"
+        content="Bike Sharing Demand Prediction — a production-grade Gradient Boosting model predicting hourly bike rental demand from weather and temporal features.">
+    <title>{% block title %}Bike Demand Prediction{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+    {% block navbar %}
+    <nav class="navbar">
+        <div class="nav-container">
+            {% block nav_brand %}
+            <a href="/" class="nav-brand">
+                <span class="brand-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="5.5" cy="17.5" r="3.5" />
+                        <circle cx="18.5" cy="17.5" r="3.5" />
+                        <path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h2" />
+                    </svg>
+                </span>
+                <span class="brand-text">BikeDemand</span>
+            </a>
+            {% endblock %}
+            {% block nav_links %}
+            <div class="nav-links">
+                <a href="https://github.com/gitadminken/Bike-sharing" target="_blank" rel="noopener noreferrer" class="nav-link nav-link-icon" aria-label="GitHub">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 2C6.48 2 2 6.58 2 12.26c0 4.5 2.87 8.31 6.84 9.65.5.1.68-.22.68-.48 0-.24-.01-.88-.01-1.73-2.78.63-3.37-1.37-3.37-1.37-.45-1.2-1.11-1.52-1.11-1.52-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.56 2.36 1.11 2.94.85.09-.66.35-1.11.64-1.36-2.22-.26-4.56-1.14-4.56-5.08 0-1.12.39-2.04 1.03-2.76-.1-.26-.45-1.31.1-2.74 0 0 .84-.28 2.75 1.05a9.2 9.2 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.43.2 2.48.1 2.74.64.72 1.03 1.64 1.03 2.76 0 3.95-2.35 4.81-4.58 5.06.36.32.69.95.69 1.92 0 1.39-.01 2.5-.01 2.84 0 .27.18.6.69.48A10.26 10.26 0 0 0 22 12.26C22 6.58 17.52 2 12 2z" />
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+            {% endblock %}
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+    {% endblock %}
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <p class="footer-logo">BikeDemand</p>
+                    <p class="footer-sub">Gradient Boosting Regression Model for hourly bike rental demand prediction.
+                    </p>
+                </div>
+                <div class="footer-col">
+                    <p class="footer-col-title">Navigation</p>
+                    <a href="/" class="footer-link">Dashboard</a>
+                    <a href="/#model" class="footer-link">Model</a>
+                    <a href="/predict" class="footer-link">Predictions</a>
+                </div>
+                <div class="footer-col">
+                    <p class="footer-col-title">Resources</p>
+                    <a href="/#guide" class="footer-link">How to Use</a>
+                    <a href="/#impact" class="footer-link">Business Impact</a>
+                    <a href="/docs" class="footer-link">API Docs</a>
+                </div>
+                <div class="footer-col">
+                    <p class="footer-col-title">Built With</p>
+                    <p class="footer-detail">FastAPI &middot; scikit-learn (Gradient Boosting)</p>
+                    <p class="footer-detail">Python 3.13 &middot; Jinja2</p>
+                    <p class="footer-detail">UCI Bike Sharing Dataset</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="footer-text">BikeDemand &mdash; Developed by Kenneth John Gequilan</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

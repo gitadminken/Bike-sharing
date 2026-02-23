@@ -1,0 +1,1304 @@
+{% extends "base.html" %}
+
+{% block title %}Predictions — Bike Demand{% endblock %}
+
+{% block content %}
+<style>
+    .predict-section-modern {
+        background: radial-gradient(ellipse at bottom left, #051622 0%, #030811 100%);
+        color: #f1f5f9;
+        min-height: calc(100vh - 70px);
+        position: relative;
+        padding: 1.5rem 1rem 2.5rem;
+        overflow-x: hidden;
+        overflow-y: visible;
+    }
+
+    .predict-section-modern *,
+    .predict-section-modern *::before,
+    .predict-section-modern *::after {
+        box-sizing: border-box;
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    /* Glowing orbs in the background */
+    .predict-section-modern::before {
+        content: '';
+        position: absolute;
+        top: -15%;
+        left: -10%;
+        width: 60%;
+        height: 70%;
+        background: radial-gradient(circle, rgba(14, 165, 164, 0.15) 0%, transparent 60%);
+        filter: blur(80px);
+        pointer-events: none;
+    }
+
+    .predict-section-modern::after {
+        content: '';
+        position: absolute;
+        bottom: -15%;
+        right: -10%;
+        width: 60%;
+        height: 70%;
+        background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, transparent 60%);
+        filter: blur(80px);
+        pointer-events: none;
+    }
+
+    .header-title-container {
+        text-align: center;
+        position: relative;
+        z-index: 2;
+        margin-bottom: 1.5rem;
+        animation: fadeInDown 1s ease-out;
+    }
+
+    .header-title-container h1 {
+        font-family: var(--font-display);
+        font-size: clamp(2rem, 3vw, 2.5rem);
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.02em;
+    }
+
+    .header-title-container p {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        max-width: 640px;
+        margin: 0 auto;
+        line-height: 1.5;
+    }
+
+    .predict-layout-modern {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: minmax(300px, 1fr) minmax(0, 1.8fr);
+        gap: 1.5rem;
+        align-items: stretch;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .predict-form-panel {
+        min-width: 0;
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .predict-data-panel {
+        min-width: 0;
+        max-width: 100%;
+        width: 100%;
+        overflow: hidden;
+    }
+
+
+    .glass-panel {
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Disable hover lift on the data panel so rows can be hovered cleanly */
+    .predict-data-panel .glass-panel:hover {
+        transform: none;
+    }
+
+    .panel-header-modern {
+        padding: 0.75rem 1rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        min-height: 45px;
+    }
+
+    .panel-header-modern h3 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 0.95rem;
+        color: #f8fafc;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .panel-header-modern h3::before {
+        content: '';
+        display: inline-block;
+        width: 6px;
+        height: 18px;
+        background: linear-gradient(to bottom, #0ea5a4, #38bdf8);
+        border-radius: 3px;
+    }
+
+    .panel-actions-modern {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-modern-ghost {
+        background: transparent;
+        color: #94a3b8;
+        border: 1px solid transparent;
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-modern-ghost:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: #f8fafc;
+    }
+
+    .btn-modern-outline {
+        background: rgba(14, 165, 164, 0.1);
+        color: #5eead4;
+        border: 1px solid rgba(14, 165, 164, 0.3);
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-modern-outline:hover {
+        background: rgba(14, 165, 164, 0.2);
+        border-color: rgba(14, 165, 164, 0.5);
+        color: #fff;
+        box-shadow: 0 0 15px rgba(14, 165, 164, 0.2);
+    }
+
+    .modern-form {
+        padding: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .modern-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .modern-form-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .modern-form-group-full {
+        grid-column: span 2;
+    }
+
+    .modern-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #94a3b8;
+        margin-bottom: 0.35rem;
+        font-weight: 700;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        white-space: nowrap;
+    }
+
+    .modern-input {
+        background: rgba(2, 6, 23, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #e2e8f0;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-family: var(--font);
+        transition: all 0.3s ease;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        box-sizing: border-box;
+        max-width: 100%;
+    }
+
+    .modern-input:focus {
+        outline: none;
+        border-color: #0ea5a4;
+        box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        background: rgba(2, 6, 23, 0.7);
+    }
+
+    select.modern-input {
+        -webkit-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 1.2em;
+        padding-right: 2.5rem;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    select.modern-input option {
+        background: #0f172a;
+        color: #e2e8f0;
+    }
+
+    /* Range Sliders */
+    .modern-range-container {
+        margin-top: 0.15rem;
+    }
+
+    .modern-range {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        max-width: 100%;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 3px;
+        outline: none;
+        transition: background 0.3s;
+    }
+
+    .modern-range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #38bdf8;
+        cursor: pointer;
+        box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+        transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modern-range::-webkit-slider-thumb:hover {
+        transform: scale(1.15);
+        background: #7dd3fc;
+    }
+
+    .range-badge {
+        background: rgba(56, 189, 248, 0.15);
+        color: #38bdf8;
+        padding: 1px 6px;
+        border-radius: 10px;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    .modern-range-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.6rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .modern-btn-primary {
+        background: linear-gradient(135deg, #0ea5a4 0%, #0369a1 100%);
+        color: #fff;
+        border: none;
+        padding: 0.75rem;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 8px 15px -4px rgba(14, 165, 164, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        width: 100%;
+        max-width: 100%;
+        margin-top: 1rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        position: relative;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .modern-btn-primary::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transform: skewX(-20deg);
+    }
+
+    .modern-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 25px -5px rgba(14, 165, 164, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    .modern-btn-primary:hover::after {
+        animation: shine 1.5s ease;
+    }
+
+    @keyframes shine {
+        100% {
+            left: 200%;
+        }
+    }
+
+    .modern-spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Data Table Panel */
+    .modern-data-info {
+        padding: 0.5rem 1rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+
+    .modern-data-count {
+        color: #5eead4;
+        font-weight: 700;
+    }
+
+    .modern-table-scroll {
+        overflow: auto;
+        flex: 1 1 0;
+        min-height: 0;
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .modern-table-scroll::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .modern-table-scroll::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .modern-table-scroll::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+    }
+
+    .modern-table-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .modern-table th {
+        background: rgba(15, 23, 42, 0.95);
+        color: #cbd5e1;
+        padding: 0.5rem 0.65rem;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(10px);
+        white-space: nowrap;
+    }
+
+    .modern-table th.th-target {
+        color: #38bdf8;
+        background: rgba(15, 23, 42, 0.98);
+    }
+
+    .modern-table td {
+        padding: 0.45rem 0.65rem;
+        color: #94a3b8;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        font-size: 0.8rem;
+        transition: color 0.2s;
+        white-space: nowrap;
+    }
+
+    .modern-table tbody tr {
+        transition: background 0.2s ease, transform 0.2s ease;
+        cursor: pointer;
+    }
+
+    .modern-table tbody tr:hover {
+        background: #1a2e3a !important;
+    }
+
+    .modern-table tbody tr:hover td {
+        color: #e2e8f0 !important;
+    }
+
+    .modern-table tbody tr.row-selected {
+        background: rgba(14, 165, 164, 0.1);
+        border-left: 2px solid #0ea5a4;
+    }
+
+    .modern-table tbody tr.row-selected td {
+        color: #fff;
+    }
+
+    .td-target {
+        font-weight: 700;
+        color: #bae6fd !important;
+    }
+
+    .table-footer-modern {
+        padding: 0.75rem;
+        text-align: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(0, 0, 0, 0.1);
+        margin-top: auto;
+    }
+
+    /* Result Card */
+    .modern-result-card {
+        background: linear-gradient(145deg, rgba(14, 165, 164, 0.1) 0%, rgba(3, 105, 161, 0.1) 100%);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        margin-top: 1.25rem;
+        text-align: center;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .modern-result-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 20px rgba(14, 165, 164, 0.2);
+        border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .modern-result-card.show {
+        animation: fadeInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .modern-result-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.8), transparent);
+    }
+
+    .modern-result-header {
+        margin-bottom: 0.5rem;
+    }
+
+    .modern-result-header h3 {
+        font-family: var(--font-display);
+        color: #e0f2fe;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    .modern-result-primary {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .modern-result-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #5eead4, #0ea5a4);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-family: var(--font-display);
+        line-height: 1;
+        margin-bottom: 0.2rem;
+        filter: drop-shadow(0 0 15px rgba(45, 212, 191, 0.4));
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .modern-result-unit {
+        background: linear-gradient(to right, #7dd3fc, #38bdf8);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-family: var(--font-display);
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-transform: none;
+        letter-spacing: 0.02em;
+    }
+
+    /* Result Comparison */
+    .modern-result-comparison {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px dashed rgba(255, 255, 255, 0.1);
+        text-align: left;
+    }
+
+    .modern-comp-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .modern-bar-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .modern-bar-label {
+        width: 70px;
+        font-size: 0.7rem;
+        color: #94a3b8;
+        font-weight: 600;
+        text-transform: uppercase;
+        flex-shrink: 0;
+    }
+
+    .modern-bar-track {
+        flex-grow: 1;
+        height: 8px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 4px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    .modern-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        width: 0;
+        transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modern-bar-fill.animate {
+        width: var(--bar-width);
+    }
+
+    .modern-bar-predicted {
+        background: linear-gradient(90deg, #0ea5a4, #5eead4);
+        box-shadow: 0 0 12px rgba(94, 234, 212, 0.5);
+    }
+
+    .modern-bar-actual {
+        background: linear-gradient(90deg, #8b5cf6, #c4b5fd);
+        box-shadow: 0 0 12px rgba(196, 181, 253, 0.5);
+    }
+
+    .modern-bar-value {
+        width: 45px;
+        font-weight: 700;
+        color: #f1f5f9;
+        text-align: right;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+
+    .modern-comp-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        padding: 0.6rem;
+    }
+
+    .modern-comp-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.4rem;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.03);
+        transition: all 0.3s ease;
+    }
+
+    .modern-comp-stat:hover {
+        background: rgba(255, 255, 255, 0.06);
+        transform: translateY(-1px);
+    }
+
+    .modern-comp-stat-label {
+        font-size: 0.65rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 0.15rem;
+    }
+
+    .modern-comp-stat-value {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #f8fafc;
+        transition: all 0.3s ease;
+    }
+
+    .modern-result-header h3 {
+        font-family: var(--font-display);
+        color: #e0f2fe;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .modern-result-primary {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    .modern-result-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #5eead4, #0ea5a4);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-family: var(--font-display);
+        line-height: 1;
+        margin-bottom: 0.25rem;
+        filter: drop-shadow(0 0 15px rgba(45, 212, 191, 0.4));
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            filter: drop-shadow(0 0 15px rgba(45, 212, 191, 0.3));
+        }
+        50% {
+            filter: drop-shadow(0 0 25px rgba(45, 212, 191, 0.6));
+        }
+    }
+
+    .modern-result-unit {
+        color: #7dd3fc;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    /* Result Comparison */
+    .modern-result-comparison {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px dashed rgba(255, 255, 255, 0.1);
+        text-align: left;
+    }
+
+    .modern-comp-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .modern-bar-row {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+    }
+
+    .modern-bar-label {
+        width: 75px;
+        font-size: 0.75rem;
+        color: #94a3b8;
+        font-weight: 600;
+        text-transform: uppercase;
+        flex-shrink: 0;
+    }
+
+    .modern-bar-track {
+        flex-grow: 1;
+        height: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 5px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    .modern-bar-fill {
+        height: 100%;
+        border-radius: 5px;
+        width: 0;
+        transition: width 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modern-bar-fill.animate {
+        width: var(--bar-width);
+    }
+
+    .modern-bar-predicted {
+        background: linear-gradient(90deg, #0ea5a4, #5eead4);
+        box-shadow: 0 0 15px rgba(94, 234, 212, 0.6);
+    }
+
+    .modern-bar-actual {
+        background: linear-gradient(90deg, #8b5cf6, #c4b5fd);
+        box-shadow: 0 0 15px rgba(196, 181, 253, 0.6);
+    }
+
+    .modern-bar-value {
+        width: 55px;
+        font-weight: 700;
+        color: #f1f5f9;
+        text-align: right;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .modern-comp-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        padding: 0.75rem;
+    }
+
+    .modern-comp-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.5rem;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        transition: all 0.3s ease;
+    }
+
+    .modern-comp-stat:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-2px);
+    }
+
+    .modern-comp-stat-label {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.25rem;
+    }
+
+    .modern-comp-stat-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #f8fafc;
+        transition: all 0.3s ease;
+    }
+
+    .modern-comp-stat-value.animate {
+        animation: statValue 0.5s ease forwards;
+    }
+
+    @keyframes statValue {
+        0% {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .error-val {
+        color: #fca5a5;
+        text-shadow: 0 0 10px rgba(252, 165, 165, 0.4);
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ── Responsive breakpoints ──────────────────────────── */
+
+    /* Medium screens – make grid flexible */
+    @media (max-width: 1200px) {
+        .predict-layout-modern {
+            grid-template-columns: minmax(250px, 1fr) minmax(0, 1.5fr);
+            gap: 1rem;
+            padding: 0 0.75rem;
+        }
+
+        .modern-form {
+            padding: 0.75rem;
+        }
+
+        .modern-form-grid {
+            gap: 0.6rem;
+        }
+
+        .predict-form-panel {
+            min-width: 0;
+        }
+    }
+
+    /* Tablet – stack the panels */
+    @media (max-width: 1024px) {
+        .predict-section-modern {
+            padding: 1.25rem 0.75rem 2rem;
+        }
+
+        .predict-layout-modern {
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+
+        .glass-panel {
+            height: auto;
+        }
+
+        .modern-table-scroll {
+            max-height: 350px;
+        }
+    }
+
+    /* Small screens – single column form */
+    @media (max-width: 768px) {
+        .predict-section-modern {
+            padding: 1rem 0.75rem 1.5rem;
+        }
+
+        .container {
+            padding: 0 0.5rem;
+        }
+
+        .predict-layout-modern {
+            gap: 1rem;
+        }
+
+        .predict-form-panel {
+            min-width: 0;
+        }
+
+        .panel-header-modern {
+            padding: 0.6rem 0.85rem;
+            min-height: auto;
+        }
+
+        .panel-header-modern h3 {
+            font-size: 0.9rem;
+        }
+
+        .modern-form {
+            padding: 0.75rem;
+        }
+
+        .modern-form-grid {
+            grid-template-columns: 1fr;
+            gap: 0.6rem;
+        }
+
+        .modern-form-group-full {
+            grid-column: span 1;
+        }
+
+        .modern-input {
+            padding: 0.45rem 0.6rem;
+            font-size: 0.8rem;
+        }
+
+        .modern-btn-primary {
+            padding: 0.6rem;
+            font-size: 0.9rem;
+            margin-top: 0.75rem;
+        }
+
+        .modern-data-info {
+            padding: 0.4rem 0.85rem;
+            font-size: 0.75rem;
+        }
+
+        .modern-table th {
+            padding: 0.4rem 0.5rem;
+            font-size: 0.6rem;
+        }
+
+        .modern-table td {
+            padding: 0.35rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .modern-result-card {
+            padding: 0.75rem;
+        }
+
+        .modern-result-value {
+            font-size: 2rem;
+        }
+
+        .modern-bar-label {
+            width: 55px;
+            font-size: 0.7rem;
+        }
+    }
+
+    /* Extra small screens */
+    @media (max-width: 480px) {
+        .predict-section-modern {
+            padding: 0.75rem 0.5rem 1.25rem;
+        }
+
+        .container {
+            padding: 0 0.5rem;
+        }
+
+        .predict-layout-modern {
+            gap: 0.75rem;
+        }
+
+        .panel-header-modern {
+            padding: 0.5rem 0.75rem;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .modern-form {
+            padding: 0.6rem;
+        }
+
+        .modern-input {
+            padding: 0.4rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .glass-panel {
+            border-radius: 12px;
+        }
+
+        .modern-result-card {
+            border-radius: 10px;
+            padding: 0.6rem;
+        }
+
+        .modern-comp-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .predict-form-panel {
+            min-width: 0;
+        }
+    }
+
+    /* Ensure form panel doesn't overflow on any screen */
+    @media (max-width: 360px) {
+        .predict-layout-modern {
+            grid-template-columns: 1fr;
+        }
+
+        .modern-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .modern-input {
+            font-size: 16px;
+        }
+    }
+</style>
+
+<section class="predict-section-modern">
+    <div class="container">
+        <div class="predict-layout-modern">
+
+            <!-- Left Panel: Form -->
+            <div class="predict-form-panel">
+                <div class="glass-panel">
+                    <div class="panel-header-modern">
+                        <h3>Input Features</h3>
+                        <div class="panel-actions-modern">
+                            <button class="btn-modern-outline" id="btn-load-sample">Load Sample</button>
+                            <button class="btn-modern-ghost" id="btn-clear-form">Clear</button>
+                        </div>
+                    </div>
+
+                    <form id="predict-form" class="modern-form">
+                        <div class="modern-form-grid">
+
+                            <!-- Row 1: Season & Weather -->
+                            <div class="modern-form-group">
+                                <label for="season" class="modern-label">Season</label>
+                                <select id="season" name="season" class="modern-input" required>
+                                    {% for val, name in season_map.items() %}
+                                    <option value="{{ val }}">{{ val }} &mdash; {{ name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="modern-form-group">
+                                <label for="weathersit" class="modern-label">Weather</label>
+                                <select id="weathersit" name="weathersit" class="modern-input" required>
+                                    {% for val, name in weather_map.items() %}
+                                    <option value="{{ val }}">{{ val }} &mdash; {{ name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Row 2: Month & Weekday -->
+                            <div class="modern-form-group">
+                                <label for="mnth" class="modern-label">Month</label>
+                                <select id="mnth" name="mnth" class="modern-input" required>
+                                    {% for m in range(1, 13) %}
+                                    <option value="{{ m }}">{{ m }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="modern-form-group">
+                                <label for="weekday" class="modern-label">Weekday</label>
+                                <select id="weekday" name="weekday" class="modern-input" required>
+                                    {% for val, name in weekday_map.items() %}
+                                    <option value="{{ val }}">{{ name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Row 3: Holiday & Working Day -->
+                            <div class="modern-form-group">
+                                <label for="holiday" class="modern-label">Holiday</label>
+                                <select id="holiday" name="holiday" class="modern-input" required>
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                            </div>
+
+                            <div class="modern-form-group">
+                                <label for="workingday" class="modern-label">Working Day</label>
+                                <select id="workingday" name="workingday" class="modern-input" required>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+
+                            <!-- Continuous Features -->
+                            <div class="modern-form-group modern-form-group-full">
+                                <label for="hr" class="modern-label">
+                                    Hour of Day
+                                    <span class="range-badge" id="hr-display">12:00</span>
+                                </label>
+                                <div class="modern-range-container">
+                                    <input type="range" id="hr" name="hr" class="modern-range" min="0" max="23"
+                                        step="1" value="12">
+                                    <div class="modern-range-labels"><span>12 AM (0)</span><span>11 PM (23)</span></div>
+                                </div>
+                            </div>
+
+                            <div class="modern-form-group modern-form-group-full">
+                                <label for="temp" class="modern-label">
+                                    Temperature
+                                    <span class="range-badge" id="temp-display">0.50</span>
+                                </label>
+                                <div class="modern-range-container">
+                                    <input type="range" id="temp" name="temp" class="modern-range" min="0" max="1"
+                                        step="0.01" value="0.5">
+                                    <div class="modern-range-labels"><span>Cold (0)</span><span>Hot (1)</span></div>
+                                </div>
+                            </div>
+
+                            <div class="modern-form-group modern-form-group-full">
+                                <label for="hum" class="modern-label">
+                                    Humidity
+                                    <span class="range-badge" id="hum-display">0.50</span>
+                                </label>
+                                <div class="modern-range-container">
+                                    <input type="range" id="hum" name="hum" class="modern-range" min="0" max="1"
+                                        step="0.01" value="0.5">
+                                    <div class="modern-range-labels"><span>Dry (0)</span><span>Humid (1)</span></div>
+                                </div>
+                            </div>
+
+                            <div class="modern-form-group modern-form-group-full">
+                                <label for="windspeed" class="modern-label">
+                                    Wind Speed
+                                    <span class="range-badge" id="windspeed-display">0.20</span>
+                                </label>
+                                <div class="modern-range-container">
+                                    <input type="range" id="windspeed" name="windspeed" class="modern-range" min="0"
+                                        max="1" step="0.01" value="0.2">
+                                    <div class="modern-range-labels"><span>Calm (0)</span><span>Strong (1)</span></div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <input type="hidden" id="actual-value" name="actual" value="">
+
+                        <button type="submit" class="modern-btn-primary" id="btn-predict">
+                            <span class="btn-text">Generate Forecast</span>
+                            <span class="btn-loader" style="display:none; align-items:center; gap:8px;">
+                                <span class="modern-spinner"></span> Processing AI Model...
+                            </span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Form content ends -->
+            </div>
+
+            <!-- Right Panel: Data Table -->
+            <div class="predict-data-panel">
+                <div class="glass-panel">
+                    <div class="panel-header-modern">
+                        <h3>Test Data</h3>
+                        <div class="panel-actions-modern">
+                            <span class="modern-data-count" id="test-count" style="font-size:0.7rem;">Loading...</span>
+                            <span style="font-size:0.7rem; color:#64748b;">Click row to auto-fill</span>
+                        </div>
+                    </div>
+
+                    <div class="modern-table-scroll">
+                        <table class="modern-table" id="test-table">
+                            <thead>
+                                <tr>
+                                    <th>Season</th>
+                                    <th>Mnth</th>
+                                    <th>Hr</th>
+                                    <th>Hol</th>
+                                    <th>WkDay</th>
+                                    <th>Work</th>
+                                    <th>Wthr</th>
+                                    <th>Temp</th>
+                                    <th>Hum</th>
+                                    <th>Wind</th>
+                                    <th class="th-target">Count</th>
+                                </tr>
+                            </thead>
+                            <tbody id="test-tbody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-footer-modern">
+                        <button class="btn-modern-ghost" id="btn-load-more-test">Load More History</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Result Card (Bottom, Full Width) -->
+        <div class="modern-result-card" id="result-card" style="display:none; margin-top: 2.5rem;">
+            <div class="modern-result-header">
+                <h3>Prediction Result</h3>
+            </div>
+            <div class="modern-result-primary">
+                <div class="modern-result-value pulse" id="result-value">0</div>
+                <div class="modern-result-unit">predicted rentals / hour</div>
+            </div>
+
+            <div class="modern-result-comparison" id="result-comparison" style="display:none;">
+                <div class="modern-comp-bars">
+                    <div class="modern-bar-row">
+                        <span class="modern-bar-label">Predicted</span>
+                        <div class="modern-bar-track">
+                            <div class="modern-bar-fill modern-bar-predicted" id="bar-predicted"></div>
+                        </div>
+                        <span class="modern-bar-value" id="bar-predicted-val">0</span>
+                    </div>
+                    <div class="modern-bar-row">
+                        <span class="modern-bar-label">Actual</span>
+                        <div class="modern-bar-track">
+                            <div class="modern-bar-fill modern-bar-actual" id="bar-actual"></div>
+                        </div>
+                        <span class="modern-bar-value" id="bar-actual-val">0</span>
+                    </div>
+                </div>
+
+                <div class="modern-comp-stats" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                    <div class="modern-comp-stat">
+                        <span class="modern-comp-stat-label">Absolute Error</span>
+                        <span class="modern-comp-stat-value error-val" id="comp-error-abs">--</span>
+                    </div>
+                    <div class="modern-comp-stat">
+                        <span class="modern-comp-stat-label">Percentage Error</span>
+                        <span class="modern-comp-stat-value error-val" id="comp-error-pct">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
