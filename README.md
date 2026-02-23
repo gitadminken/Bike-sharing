@@ -47,8 +47,8 @@ Bike sharing operators face challenges balancing bike availability with demand f
 
 ```bash
 # Clone and setup
-git clone <https://github.com/gitadminken/Bike-sharing.git>
-cd bike-sharing-demand
+git clone https://github.com/gitadminken/Bike-sharing.git
+cd Bike-sharing
 
 # Install dependencies
 pip install -r requirements.txt
@@ -73,7 +73,7 @@ docker run -p 8000:8000 bike-demand
 
 ### 1. Dashboard
 
-The main dashboard displays model performance metrics and leaderboard comparison.
+The interactive dashboard visualizes model performance, highlights key metrics, and compares prediction results across multiple algorithms, enabling users to explore data trends and evaluate forecasting accuracy.
 
 ![Dashboard View](./app/static/images/dashboard.png)
 
