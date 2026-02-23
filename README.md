@@ -4,7 +4,7 @@ Predicts hourly bike rental demand to help operators optimize fleet allocation a
 
 ## Live Website
 
-Visit the live dashboard here: [https://bike-demand.example.com](https://bike-demand.example.com)
+Visit the live dashboard here: [https://bike-sharing-production.up.railway.app](https://bike-sharing-production.up.railway.app)
 
 ![Dashboard](./app/static/images/dashboard.png)
 
@@ -102,12 +102,12 @@ The model returns the predicted bike count along with actual values (if provided
 - **Backend**: FastAPI, Uvicorn
 - **ML**: scikit-learn, XGBoost, pandas, NumPy
 - **Frontend**: HTML, JavaScript, Jinja2
-- **Deployment**: Docker
+- **Deployment**: Docker, Railway
 
 ## Future Improvements
 
 1. **Add time-series features** — Incorporate lag features and rolling averages for improved forecasting
-2. **Deploy to cloud** — Kubernetes deployment with CI/CD pipeline
+2. ~~**Deploy to cloud**~~ — ✅ Deployed on [Railway](https://bike-sharing-production.up.railway.app)
 3. **Real-time data integration** — Connect to live weather API for dynamic predictions
 
 ---
