@@ -1,5 +1,3 @@
-# Bike-sharing
-
 # Bike Sharing Demand Prediction
 
 Predicts hourly bike rental demand to help operators optimize fleet allocation and resource planning.
@@ -49,7 +47,7 @@ Bike sharing operators face challenges balancing bike availability with demand f
 
 ```bash
 # Clone and setup
-git clone <repo-url>
+git clone <https://github.com/gitadminken/Bike-sharing.git>
 cd bike-sharing-demand
 
 # Install dependencies
