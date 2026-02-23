@@ -1,8 +1,4 @@
-INFO:     100.64.0.2:42292 - "GET /app HTTP/1.1" 200 OK
-INFO:     100.64.0.2:36782 - "POST /api/predict HTTP/1.1" 200 OK
-INFO:     100.64.0.3:62342 - "POST /api/predict HTTP/1.1" 200 OK
-INFO:     100.64.0.3:45870 - "POST /api/predict HTTP/1.1" 200 OK
-Stopping Container"""FastAPI application for the Bike Sharing Demand Prediction dashboard.
+"""FastAPI application for the Bike Sharing Demand Prediction dashboard.
 
 Artifacts are loaded at startup. If any artifact is missing or was built with
 an incompatible library version (e.g. after a pandas/sklearn upgrade), the app
